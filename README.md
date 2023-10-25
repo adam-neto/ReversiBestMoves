@@ -2,6 +2,8 @@
 
 Welcome to the major project for CISC/CMPE 204!
 
+This modelling project takes in a game state (positions of pieces) for the board game Reversi (aka Othello). It uses this information to model which moves are available for the next players, which moves will make the player have more pieces than their opponent, and which moves yield the most possible pieces.
+
 Change this README.md file to summarize your project, and provide pointers to the general structure of the repository. How you organize and build things (which files, how you structure things, etc) is entirely up to you! The only things you must keep in place are what is already listed in the **Structure** section below.
 
 ## Structure
