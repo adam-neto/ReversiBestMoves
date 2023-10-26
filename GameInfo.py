@@ -21,17 +21,28 @@ class GameState:
         # hold current player
         self.player = "white"
 
+        # create visual board
+        self.visual_board = [["0" for j in range(BOARD_WIDTH)] for i in range(BOARD_HEIGHT)]
+
         # initialize game board (booleans for each black and white)
         self.w = [[False for j in range(BOARD_WIDTH)] for i in range(BOARD_HEIGHT)]
         self.b = [[False for j in range(BOARD_WIDTH)] for i in range(BOARD_HEIGHT)]
 
         # initial white positions
-        self.w[BOARD_WIDTH/2 - 1][BOARD_HEIGHT/2 - 1] = True    # middle top-left starter
-        self.w[BOARD_WIDTH/2][BOARD_HEIGHT/2] = True            # middle bottom-right starter
+        self.w[int(BOARD_WIDTH/2 - 1)][int(BOARD_HEIGHT/2 - 1)] = True    # middle top-left starter
+        self.w[int(BOARD_WIDTH/2)][int(BOARD_HEIGHT/2)] = True            # middle bottom-right starter
 
         # initial black positions
-        self.b[BOARD_WIDTH/2][BOARD_HEIGHT/2 - 1] = True        # middle top-right starter
-        self.b[BOARD_WIDTH/2 - 1][BOARD_HEIGHT/2] = True        # middle bottom-left starter
+        self.b[int(BOARD_WIDTH/2)][int(BOARD_HEIGHT/2 - 1)] = True        # middle top-right starter
+        self.b[int(BOARD_WIDTH/2 - 1)][int(BOARD_HEIGHT/2)] = True        # middle bottom-left starter
+
+        # append these onto visual board
+        for i in range(BOARD_WIDTH):
+            for j in range(BOARD_HEIGHT):
+                if self.w[i][j]:
+                    self.visual_board[i][j] = "w"
+                elif self.b[i][j]:
+                    self.visual_board[i][j] = "b"
 
     # SPACE AVAILABILITY
     # current player has piece at x,y
@@ -166,3 +177,11 @@ class GameState:
             else:
                 self.b[x][y]
                 self.player = "white"
+
+    # draw the current board (only after each turn)
+    def draw_board(self):
+        for i in range(BOARD_WIDTH):
+            row = ""
+            for j in range(BOARD_HEIGHT):
+                row += self.visual_board[i][j] + " "
+            print(row)
