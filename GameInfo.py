@@ -6,7 +6,7 @@ the game state, and checking if
 positions hold available moves
 
 Author: Adam Neto
-Date Updated: 10/25/23
+Date Updated: 10/26/23
 """
 
 # board size info (constant)
@@ -21,28 +21,20 @@ class GameState:
         # hold current player
         self.player = "white"
 
-        # create visual board
-        self.visual_board = [["0" for j in range(BOARD_WIDTH)] for i in range(BOARD_HEIGHT)]
+        # hold coordinates of pieces being sandwiched each turn
+        self.sandwiched = []
 
         # initialize game board (booleans for each black and white)
         self.w = [[False for j in range(BOARD_WIDTH)] for i in range(BOARD_HEIGHT)]
         self.b = [[False for j in range(BOARD_WIDTH)] for i in range(BOARD_HEIGHT)]
 
         # initial white positions
-        self.w[int(BOARD_WIDTH/2 - 1)][int(BOARD_HEIGHT/2 - 1)] = True    # middle top-left starter
-        self.w[int(BOARD_WIDTH/2)][int(BOARD_HEIGHT/2)] = True            # middle bottom-right starter
+        self.w[int(BOARD_WIDTH / 2 - 1)][int(BOARD_HEIGHT / 2 - 1)] = True  # middle top-left starter
+        self.w[int(BOARD_WIDTH / 2)][int(BOARD_HEIGHT / 2)] = True  # middle bottom-right starter
 
         # initial black positions
-        self.b[int(BOARD_WIDTH/2)][int(BOARD_HEIGHT/2 - 1)] = True        # middle top-right starter
-        self.b[int(BOARD_WIDTH/2 - 1)][int(BOARD_HEIGHT/2)] = True        # middle bottom-left starter
-
-        # append these onto visual board
-        for i in range(BOARD_WIDTH):
-            for j in range(BOARD_HEIGHT):
-                if self.w[i][j]:
-                    self.visual_board[i][j] = "w"
-                elif self.b[i][j]:
-                    self.visual_board[i][j] = "b"
+        self.b[int(BOARD_WIDTH / 2)][int(BOARD_HEIGHT / 2 - 1)] = True  # middle top-right starter
+        self.b[int(BOARD_WIDTH / 2 - 1)][int(BOARD_HEIGHT / 2)] = True  # middle bottom-left starter
 
     # SPACE AVAILABILITY
     # current player has piece at x,y
@@ -75,96 +67,111 @@ class GameState:
         return True
 
     # SANDWICHING CONSTRAINTS
+    # store sandwiched positions as to not double count
+    def append_sandwiched(self, temp_sandwiched):
+        for pos in temp_sandwiched:
+            if pos not in self.sandwiched:
+                self.sandwiched.append(pos)
+
     def row_sand(self, x, y):
+        temp_sandwiched = []  # hold temporary sandwiched coordinates
         i = 1  # scan x values (increment)
 
         # left side
         while self.opp_here(x - i, y):
-            i -= 1
+            temp_sandwiched.append([x - i, y])
+            i += 1
             if self.mine_here(x - i, y):
-                return True
-        i = 1  # reset i after failed test
+                self.append_sandwiched(temp_sandwiched)
+        temp_sandwiched = []  # reset temp sandwiched values
+        i = 1  # reset i after test
 
         # right side
         while self.opp_here(x + i, y):
+            temp_sandwiched.append([x + i, y])
             i += 1
             if self.mine_here(x + i, y):
-                return True
-
-        # no row sandwich if we get to this point
-        return False
+                self.append_sandwiched(temp_sandwiched)
 
     def column_sand(self, x, y):
+        temp_sandwiched = []  # hold temporary sandwiched coordinates
         j = 1  # scan y values (increment)
 
         # above
-        while self.opp_here(x - j, y):
-            j -= 1
-            if self.mine_here(x - j, y):
-                return True
+        while self.opp_here(x, y - j):
+            temp_sandwiched.append([x, y - j])
+            j += 1
+            if self.mine_here(x, y - j):
+                self.append_sandwiched(temp_sandwiched)
+        temp_sandwiched = []  # reset temp sandwiched values
         j = 1  # reset j after failed test
 
         # below
-        while self.opp_here(x + j, y):
+        while self.opp_here(x, y + j):
+            temp_sandwiched.append([x, y + j])
             j += 1
-            if self.mine_here(x + j, y):
-                return True
-
-        # no column sandwich if we get to this point
-        return False
+            if self.mine_here(x, y + j):
+                self.append_sandwiched(temp_sandwiched)
 
     def diagonal_sand(self, x, y):
+        temp_sandwiched = []  # hold temporary sandwiched coordinates
         i = 1  # scan x values (increment)
         j = 1  # scan y values (increment)
 
         # up-left
         while self.opp_here(x - i, y - j):
-            i -= 1
-            j -= 1
+            temp_sandwiched.append([x - i, y - j])
+            i += 1
+            j += 1
             if self.mine_here(x - i, y - j):
-                return True
+                self.append_sandwiched(temp_sandwiched)
+        temp_sandwiched = []  # reset temp sandwiched values
         i = 1  # reset i after failed test
         j = 1  # reset j after failed test
 
         # up-right
         while self.opp_here(x + i, y - j):
+            temp_sandwiched.append([x + i, y - j])
             i += 1
-            j -= 1
+            j += 1
             if self.mine_here(x + i, y - j):
-                return True
+                self.append_sandwiched(temp_sandwiched)
+        temp_sandwiched = []  # reset temp sandwiched values
         i = 1  # reset i after failed test
         j = 1  # reset j after failed test
 
         # down-left
         while self.opp_here(x - i, y + j):
-            i -= 1
+            temp_sandwiched.append([x - i, y + j])
+            i += 1
             j += 1
             if self.mine_here(x - i, y + j):
-                return True
+                self.append_sandwiched(temp_sandwiched)
+        temp_sandwiched = []  # reset temp sandwiched values
         i = 1  # reset i after failed test
         j = 1  # reset j after failed test
 
         # down-right
         while self.opp_here(x + i, y + j):
+            temp_sandwiched.append([x + i, y + j])
             i += 1
             j += 1
             if self.mine_here(x + i, y + j):
-                return True
-
-        # no diagonal sandwich if we get to this point
-        return False
+                self.append_sandwiched(temp_sandwiched)
 
     # check if there are ANY sandwich possibilities
     def sandwich(self, x, y):
-        # only calculate if space is empty
-        if self.empty(x, y):
-            # check for sandwiches
-            if self.row_sand(x, y) or self.column_sand(x, y) or self.diagonal_sand(x, y):
-                return True
-            else:
-                return False
-        else:
-            return False
+        # only calculate if in range
+        if 0 <= x < BOARD_WIDTH and 0 <= y < BOARD_HEIGHT:
+            # only calculate if space is empty
+            if self.empty(x, y):
+                # check for sandwiches
+                self.row_sand(x, y)
+                self.column_sand(x, y)
+                self.diagonal_sand(x, y)
+                if len(self.sandwiched) > 0:
+                    return True
+        return False
 
     # place a piece and alter the game state
     def place_piece(self, x, y):
@@ -172,16 +179,50 @@ class GameState:
         if self.sandwich(x, y):
             # place piece and switch player
             if self.player == "white":
-                self.w[x][y]
+                self.w[x][y] = True
+
+                # swap sandwiched pieces
+                for pos in self.sandwiched:
+                    self.w[pos[0]][pos[1]] = True
+                    self.b[pos[0]][pos[1]] = False
                 self.player = "black"
             else:
-                self.b[x][y]
+                self.b[x][y] = True
+
+                # swap sandwiched pieces
+                for pos in self.sandwiched:
+                    self.b[pos[0]][pos[1]] = True
+                    self.w[pos[0]][pos[1]] = False
                 self.player = "white"
+            self.sandwiched = []
+            return True
+        return False
+
+    def check_full(self):
+        for j in range(BOARD_WIDTH):
+            for i in range(BOARD_HEIGHT):
+                if not (self.w[i][j] or self.b[i][j]):
+                    return False
+        return True
 
     # draw the current board (only after each turn)
     def draw_board(self):
-        for i in range(BOARD_WIDTH):
+        total_white = 0;
+        total_black = 0;
+        for j in range(BOARD_WIDTH):
             row = ""
-            for j in range(BOARD_HEIGHT):
-                row += self.visual_board[i][j] + " "
+            for i in range(BOARD_HEIGHT):
+                if self.w[i][j]:
+                    row += "w" + " "
+                    total_white += 1
+                elif self.b[i][j]:
+                    row += "b" + " "
+                    total_black += 1
+                else:
+                    row += "." + " "
             print(row)
+
+        if self.check_full():
+            print("Game over. Final Score:")
+            print("White: " + str(total_white))
+            print("Black: " + str(total_black))
