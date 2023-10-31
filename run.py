@@ -59,6 +59,8 @@ class FancyPropositions:
 # same for diagonals and columns
 # then, if it is playable, passes to game info and game info finds all the other colour pieces to eliminate
 
+# does game state update in run or in gameinfo?
+
 w = BasicPropositions("w")
 b = BasicPropositions("b")
 e = BasicPropositions("e")
