@@ -30,13 +30,30 @@ class BasicPropositions:
 # For a complete module reference, see https://bauhaus.readthedocs.io/en/latest/bauhaus.html
 @constraint.at_least_one(E)
 @proposition(E)
-class FancyPropositions:
+class Hashable:
+    def __hash__(self):
+        return hash(str(self))
 
-    def __init__(self, data):
-        self.data = data
+    def __eq__(self, __value: object) -> bool:
+        return hash(self) == hash(__value)
 
     def __repr__(self):
-        return f"A.{self.data}"
+        return str(self)
+
+
+@proposition(E)
+class Spot(Hashable):
+    def __init__(self, black, white, empty, r, c, d, playable):
+        self.black = black
+        self.white = white
+        self.empty = empty
+        self.r = r
+        self.c = c
+        self.d = d
+        self.playable = playable
+
+    def __str__(self):
+        return f"(is spot playable: {self.playable})"
 
 # i think we need to have an 2d array for all the spots
 
@@ -61,13 +78,13 @@ class FancyPropositions:
 
 # does game state update in run or in gameinfo?
 
-w = BasicPropositions("w")
-b = BasicPropositions("b")
-e = BasicPropositions("e")
-s = BasicPropositions("s")
-r = BasicPropositions("r") #row is playable
-c = BasicPropositions("c") #column is playable
-d = BasicPropositions("d") #diagonal is playable
+w = BasicPropositions("w")  # spot has a white piece
+b = BasicPropositions("b")  # spot has a black piece
+e = BasicPropositions("e")  # spot is empty
+p = BasicPropositions("p")  # spot is playable
+r = BasicPropositions("r")  # row is playable
+c = BasicPropositions("c")  # column is playable
+d = BasicPropositions("d")  # diagonal is playable
 
 
 # Build an example full theory for your setting and return it.
@@ -76,8 +93,13 @@ d = BasicPropositions("d") #diagonal is playable
 #  This restriction is fairly minimal, and if there is any concern, reach out to the teaching staff to clarify
 #  what the expectations are.
 
+
+
 def still_playing():
+
     E.add_constraint(a & b)
+
+
 def playable_spot(x, y):
     # Add custom constraints by creating formulas with the variables you created. 
     E.add_constraint((a | b) & ~x)
