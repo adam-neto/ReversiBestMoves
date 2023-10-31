@@ -1,13 +1,14 @@
-
 from bauhaus import Encoding, proposition, constraint
 from bauhaus.utils import count_solutions, likelihood
 
 # These two lines make sure a faster SAT solver is used.
 from nnf import config
+
 config.sat_backend = "kissat"
 
 # Encoding that will store all of your constraints
 E = Encoding()
+
 
 # To create propositions, create classes for them first, annotated with "@proposition" and the Encoding
 @proposition(E)
@@ -37,16 +38,34 @@ class FancyPropositions:
     def __repr__(self):
         return f"A.{self.data}"
 
-# Call your variables whatever you want
-a = BasicPropositions("a")
-b = BasicPropositions("b")   
-c = BasicPropositions("c")
-d = BasicPropositions("d")
+# i think we need to have an 2d array for all the spots
+
+# the propositions should be if a white piece is there, if a black piece is there, if it is playable, if r, if c, if d
+# should loop through each spot, so each spot should be part of a 2d array?
+# functions should be: check if spot it playable by row, check if spot is playable by column, check if game is over
+
+# for s in spots : if at least one: p
+# empty check: if not w and not b
+# playable check: if empty and (row or column or diagonal)
+# row check(coordinate user wants to play: x,y and assume white player):
+#       for spot in spots[x]:
+#           spot[y-1] = b and spot[y] = e and for 0 <= i <= (y-2):
+#                at least one: spot[i] = w and for all: for i < j < (y-2):
+#                   spot[j] = b
+#           OR spot[y+1] = b and spot[y] = e and for (y+2) <= i < 8:
+# #                at least one: spot[i] = w and for all: for (y+2) < j < i:
+# #                   spot[j] = b
+
+# same for diagonals and columns
+# then, if it is playable, passes to game info and game info finds all the other colour pieces to eliminate
+
+w = BasicPropositions("w")
+b = BasicPropositions("b")
 e = BasicPropositions("e")
-# At least one of these will be true
-x = FancyPropositions("x")
-y = FancyPropositions("y")
-z = FancyPropositions("z")
+s = BasicPropositions("s")
+r = BasicPropositions("r") #row is playable
+c = BasicPropositions("c") #column is playable
+d = BasicPropositions("d") #diagonal is playable
 
 
 # Build an example full theory for your setting and return it.
@@ -54,7 +73,10 @@ z = FancyPropositions("z")
 #  There should be at least 10 variables, and a sufficiently large formula to describe it (>50 operators).
 #  This restriction is fairly minimal, and if there is any concern, reach out to the teaching staff to clarify
 #  what the expectations are.
-def example_theory():
+
+def still_playing():
+    E.add_constraint(a & b)
+def playable_spot(x, y):
     # Add custom constraints by creating formulas with the variables you created. 
     E.add_constraint((a | b) & ~x)
     # Implication
@@ -80,7 +102,7 @@ if __name__ == "__main__":
     print("   Solution: %s" % T.solve())
 
     print("\nVariable likelihoods:")
-    for v,vn in zip([a,b,c,x,y,z], 'abcxyz'):
+    for v, vn in zip([w, b, e, s, r, d, c], 'wbesrdc'):
         # Ensure that you only send these functions NNF formulas
         # Literals are compiled to NNF here
         print(" %s: %.2f" % (vn, likelihood(T, v)))
