@@ -5,8 +5,8 @@ It also contains methods for updating
 the game state, and checking if
 positions hold available moves
 
-Author: Adam Neto
-Date Updated: 10/26/23
+Original author: Adam Neto
+Date Updated: 11/2/23
 """
 from nnf import true
 from nnf import false
@@ -203,9 +203,9 @@ class GameState:
             return True
         return False
 
-    def still_playing(self):
-        for j in range(BOARD_WIDTH):
-            for i in range(BOARD_HEIGHT):
+    def board_full(self):
+        for j in range(BOARD_HEIGHT):
+            for i in range(BOARD_WIDTH):
                 if not (self.w[i][j] or self.b[i][j]):
                     return False
         return True
