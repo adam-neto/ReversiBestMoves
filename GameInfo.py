@@ -203,9 +203,24 @@ class GameState:
             return True
         return False
 
-    def board_full(self):
-        for j in range(BOARD_HEIGHT):
-            for i in range(BOARD_WIDTH):
-                if not (self.w[i][j] or self.b[i][j]):
-                    return False
-        return True
+    # draw the current board (only after each turn)
+    def draw_board(self):
+        total_white = 0;
+        total_black = 0;
+        for j in range(BOARD_WIDTH):
+            row = ""
+            for i in range(BOARD_HEIGHT):
+                if self.w[i][j]:
+                    row += "w" + " "
+                    total_white += 1
+                elif self.b[i][j]:
+                    row += "b" + " "
+                    total_black += 1
+                else:
+                    row += "." + " "
+            print(row)
+
+        if self.check_full():
+            print("Game over. Final Score:")
+            print("White: " + str(total_white))
+            print("Black: " + str(total_black))
