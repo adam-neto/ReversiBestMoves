@@ -3,19 +3,26 @@ from bauhaus.utils import count_solutions, likelihood
 
 # These two lines make sure a faster SAT solver is used.
 from nnf import config
+from nnf import Var
+from nnf import true
 
 import spots
 from spots import SPOTS
 
 config.sat_backend = "kissat"
 
+BOARD_WIDTH = 8
+BOARD_HEIGHT = 8
+
 # Encoding that will store all of your constraints
 E = Encoding()
 
+#FOR THE FEEDBACK: so what we're confused about is what we should have our spots as (objects? or just a grid?) because
+# we aren't sure how exactly to apply the constraints to them...
 
-# To create propositions, create classes for them first, annotated with "@proposition" and the Encoding
+
 @proposition(E)
-class BasicPropositions:
+class SpotProps:
 
     def __init__(self, data):
         self.data = data
@@ -80,14 +87,62 @@ class Spot(Hashable):
 
 # does game state update in run or in gameinfo?
 
-w = BasicPropositions("w")  # spot has a white piece
-b = BasicPropositions("b")  # spot has a black piece
-e = BasicPropositions("e")  # spot is empty
-p = BasicPropositions("p")  # spot is playable
-r = BasicPropositions("r")  # row is playable
-c = BasicPropositions("c")  # column is playable
-d = BasicPropositions("d")  # diagonal is playable
-g = BasicPropositions("g") #game is still going
+w = SpotProps("w")  # spot has a white piece
+b = SpotProps("b")  # spot has a black piece
+e = SpotProps("e")  # spot is empty
+p = SpotProps("p")  # spot is playable
+r = SpotProps("r")  # row is playable
+c = SpotProps("c")  # column is playable
+d = SpotProps("d")  # diagonal is playable
+g = SpotProps("g") # game is still going
+
+#draws the board after each turn
+# TODO: update the board colours when a player successfully places a piece
+def draw_board(self):
+        total_white = 0
+        total_black = 0
+        for j in range(BOARD_WIDTH):
+            row = ""
+            for i in range(BOARD_HEIGHT):
+                if self.w[i][j]:
+                    row += "w" + " "
+                    total_white += 1
+                elif self.b[i][j]:
+                    row += "b" + " "
+                    total_black += 1
+                else:
+                    row += "." + " "
+            print(row)
+
+        if self.check_full():
+            print("Game over. Final Score:")
+            print("White: " + str(total_white))
+            print("Black: " + str(total_black))
+
+def get_next_play:
+    user_move = input("Player ---- enter your next coordinates: ").split(' ')
+    x = int(user_move[0])
+    y = user_move[1]
+    return x, y
+
+# each spot on the board should either be white, black, or neither (empty)
+def ensure_valid_board(E):
+    for i in range(BOARD_HEIGHT):
+        for j in range(BOARD_WIDTH):
+            E.add_constraint(e[i][j] >> (~w[i][j] & ~w[i][j]))
+            if spots.SPOTS[i][j] == 'w':
+                E.add_constraint(w[i][j] & ~b[i][j])
+            elif spots.SPOTS[i][j] == 'b':
+                E.add_constraint(~w[i][j] & b[i][j])
+
+
+def check_empty(x, y):
+
+
+def check_full():
+    for j in range(BOARD_WIDTH):
+        for i in range(BOARD_HEIGHT):
+            # should check each spot for e, if none are !e then game is over
 
 
 def build_theory():
@@ -99,6 +154,7 @@ def build_theory():
 
 def specific_spot(x, y):
     for spot in SPOTS:
+
 
 
 
@@ -122,6 +178,7 @@ def playable_spot(x, y):
 
     return E
 
+# TODO: error log to explain why the user can't move there
 
 if __name__ == "__main__":
 

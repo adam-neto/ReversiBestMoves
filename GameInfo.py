@@ -8,6 +8,7 @@ positions hold available moves
 Author: Adam Neto
 Date Updated: 10/26/23
 """
+from nnf import true
 
 # board size info (constant)
 BOARD_WIDTH = 8
@@ -42,7 +43,7 @@ class GameState:
         # check if out of range
         if 0 <= x < BOARD_WIDTH and 0 <= y < BOARD_HEIGHT:
             if self.player == "white":
-                if self.w[x][y]:
+                if self.w[x][y] :
                     return True
             else:
                 if self.b[x][y]:
@@ -51,6 +52,7 @@ class GameState:
 
     # current player's opponent has piece at x,y
     def opp_here(self, x, y):
+        out = true
         # check if out of range
         if 0 <= x < BOARD_WIDTH and 0 <= y < BOARD_HEIGHT:
             if self.player == "white":
@@ -204,25 +206,3 @@ class GameState:
                 if not (self.w[i][j] or self.b[i][j]):
                     return False
         return True
-
-    # draw the current board (only after each turn)
-    def draw_board(self):
-        total_white = 0;
-        total_black = 0;
-        for j in range(BOARD_WIDTH):
-            row = ""
-            for i in range(BOARD_HEIGHT):
-                if self.w[i][j]:
-                    row += "w" + " "
-                    total_white += 1
-                elif self.b[i][j]:
-                    row += "b" + " "
-                    total_black += 1
-                else:
-                    row += "." + " "
-            print(row)
-
-        if self.check_full():
-            print("Game over. Final Score:")
-            print("White: " + str(total_white))
-            print("Black: " + str(total_black))
