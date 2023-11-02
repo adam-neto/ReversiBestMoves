@@ -1,10 +1,11 @@
 from bauhaus import Encoding, proposition, constraint
 from bauhaus.utils import count_solutions, likelihood
 
-from nnf import config
+from nnf import config, false
 from nnf import Var
 from nnf import true
 
+import spots
 from spots import SPOTS
 from spots import WHITE_PLAYABLE
 from spots import BLACK_PLAYABLE
@@ -17,7 +18,8 @@ BOARD_HEIGHT = 8
 # Encoding that will store all of your constraints
 E = Encoding()
 
-#FOR THE FEEDBACK: so what we're confused about is what we should have our spots as (objects? or just a grid?) because
+
+# FOR THE FEEDBACK: so what we're confused about is what we should have our spots as (objects? or just a grid?) because
 # we aren't sure how exactly to apply the constraints to them...
 
 
@@ -30,36 +32,35 @@ class SpotProps:
     def __repr__(self):
         return f"A.{self.data}"
 
-    # I HAVE OFFICIALLY ENTERED THE REPOSITORY. CONSIDER YOUR SELF ENDED.
-
 
 # Different classes for propositions are useful because this allows for more dynamic constraint creation
 # for propositions within that class. For example, you can enforce that "at least one" of the propositions
 # that are instances of this class must be true by using a @constraint decorator.
 # other options include: at most one, exactly one, at most k, and implies all.
 # For a complete module reference, see https://bauhaus.readthedocs.io/en/latest/bauhaus.html
-@constraint.at_least_one(E)
+# piece placement on the board
 @proposition(E)
-class Hashable:
-    def __hash__(self):
-        return hash(str(self))
+class Piece:
+    def __init__(self, x, y, colour) -> None:
+        self.x = x
+        self.y = y
+        self.colour = colour
 
-    def __eq__(self, __value: object) -> bool:
-        return hash(self) == hash(__value)
-
-    def __repr__(self):
-        return str(self)
+    def __repr__(self) -> str:
+        return f"Piece({self.colour}, {self.x}, {self.y})"
 
 
 @proposition(E)
-class Spot(Hashable):
-    def __init__(self, piece, white_playable, black_playable):
+class Spot(Piece):
+    def __init__(self, empty, piece, white_playable, black_playable):
+        self.empty = empty
         self.piece = piece
         self.wp = white_playable
         self.bp = black_playable
 
     def __str__(self):
         return f"(is spot playable: {self.playable})"
+
 
 # sets the constraint for each spot on the board
 spot_props = []
@@ -94,36 +95,58 @@ p = SpotProps("p")  # spot is playable
 r = SpotProps("r")  # row is playable
 c = SpotProps("c")  # column is playable
 d = SpotProps("d")  # diagonal is playable
-g = SpotProps("g") # game is still going
 
-#draws the board after each turn
+
+# draws the board after each turn
 # TODO: update the board colours when a player successfully places a piece
+
+
+#
 def draw_board(self):
-        total_white = 0
-        total_black = 0
-        for j in range(BOARD_WIDTH):
-            row = ""
-            for i in range(BOARD_HEIGHT):
-                if self.w[i][j]:
-                    row += "w" + " "
-                    total_white += 1
-                elif self.b[i][j]:
-                    row += "b" + " "
-                    total_black += 1
-                else:
-                    row += "." + " "
-            print(row)
+    total_white = 0
+    total_black = 0
+    for j in range(BOARD_WIDTH):
+        row = ""
+        for i in range(BOARD_HEIGHT):
+            if self.w[i][j]:
+                row += "w" + " "
+                total_white += 1
+            elif self.b[i][j]:
+                row += "b" + " "
+                total_black += 1
+            else:
+                row += "." + " "
+        print(row)
 
-        if self.check_full():
-            print("Game over. Final Score:")
-            print("White: " + str(total_white))
-            print("Black: " + str(total_black))
+    if self.check_full():
+        print("Game over. Final Score:")
+        print("White: " + str(total_white))
+        print("Black: " + str(total_black))
 
-def get_next_play:
+# TODO: deal with edge cases
+def is_spot_playable(x, y):
+    # check if row is playable
+    before = SPOTS[x][y-1] == 'b'
+    after = SPOTS[x][y+1] == 'b'
+    beside_b = before | after
+
+    if beside_b:
+        if before:
+            n = 2
+            sandwich = false
+            while n < y:
+                if SPOTS[x][y-n] == 'w':
+                    sandwich = true
+                    break
+                elif SPOTS[x][y-n] =='':
+                    
+                n = n+1
+def get_next_play():
     user_move = input("Player ---- enter your next coordinates: ").split(' ')
     x = int(user_move[0])
     y = user_move[1]
     return x, y
+
 
 # each spot on the board should either be white, black, or neither (empty)
 def ensure_valid_board(E):
@@ -137,12 +160,17 @@ def ensure_valid_board(E):
 
 
 def check_empty(x, y):
+    return
 
 
 def check_full():
+    print('check')
     for j in range(BOARD_WIDTH):
         for i in range(BOARD_HEIGHT):
-            # should check each spot for e, if none are !e then game is over
+            E.add_constraint(~e[i][j])  # true if all spots are not empty
+
+
+# should check each spot for e, if none are !e then game is over
 
 
 def build_theory():
@@ -151,31 +179,26 @@ def build_theory():
         for column in spot:
             E.add_constraint(e >> ~b & ~w)
 
+    # TODO: run all the other conditionals here to ensure E is held
 
-def check_row_sandwich(x,y):
+    return E
 
 
+def check_row_sandwich(x, y):
+    for spots in SPOTS:
+        # rij → (((bi-1 j) ∧ (wi-n j ) ∧ (¬(ei-2 j ∨ ei-3 j ∨ … ∨ ei-(n+1) j)) ∨ ((bi+1 j) ∧ (wi+n j ) ∧ (¬(ei+2 j ∨
+        # ei+3 j ∨ … ∨ ei+(n-1) j))), where 2 <= n <= i
+        E.add_constraint(wp >> spots[1])
 
-"""def playable_spot(x, y):
-    # Add custom constraints by creating formulas with the variables you created.
-    E.add_constraint((a | b) & ~x)
-    # Implication
-    E.add_constraint(y >> z)
-    # Negate a formula
-    E.add_constraint(~(x & y))
-    # You can also add more customized "fancy" constraints. Use case: you don't want to enforce "exactly one"
-    # for every instance of BasicPropositions, but you want to enforce it for a, b, and c.:
-    constraint.add_exactly_one(E, a, b, c)
-
-    return E"""
 
 def example_theory():
-    # ???
+    # the example theory will be built here, we are just working on setting the constraints
+    return
+
 
 # TODO: error log to explain why the user can't move there
 
 if __name__ == "__main__":
-
     T = example_theory()
     # Don't compile until you're finished adding all your constraints!
     T = T.compile()
@@ -186,7 +209,7 @@ if __name__ == "__main__":
     print("   Solution: %s" % T.solve())
 
     print("\nVariable likelihoods:")
-    for v, vn in zip([w, b, e, s, r, d, c], 'wbesrdc'):
+    for v, vn in zip([w, b, e, r, d, c, p], 'wberdcp'):
         # Ensure that you only send these functions NNF formulas
         # Literals are compiled to NNF here
         print(" %s: %.2f" % (vn, likelihood(T, v)))
