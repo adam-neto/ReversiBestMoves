@@ -4,6 +4,9 @@ from bauhaus.utils import count_solutions, likelihood
 # These two lines make sure a faster SAT solver is used.
 from nnf import config
 
+import spots
+from spots import SPOTS
+
 config.sat_backend = "kissat"
 
 # Encoding that will store all of your constraints
@@ -55,7 +58,6 @@ class Spot(Hashable):
     def __str__(self):
         return f"(is spot playable: {self.playable})"
 
-# i think we need to have an 2d array for all the spots
 
 # the propositions should be if a white piece is there, if a black piece is there, if it is playable, if r, if c, if d
 # should loop through each spot, so each spot should be part of a 2d array?
@@ -85,6 +87,20 @@ p = BasicPropositions("p")  # spot is playable
 r = BasicPropositions("r")  # row is playable
 c = BasicPropositions("c")  # column is playable
 d = BasicPropositions("d")  # diagonal is playable
+g = BasicPropositions("g") #game is still going
+
+
+def build_theory():
+    # if a spot is empty, it must not have black or white (is there a way to set e without adding a constraint?)
+    for spot in SPOTS:
+        for column in spot:
+            E.add_constraint(e >> ~b & ~w)
+
+
+def specific_spot(x, y):
+    for spot in SPOTS:
+
+
 
 
 # Build an example full theory for your setting and return it.
@@ -92,13 +108,6 @@ d = BasicPropositions("d")  # diagonal is playable
 #  There should be at least 10 variables, and a sufficiently large formula to describe it (>50 operators).
 #  This restriction is fairly minimal, and if there is any concern, reach out to the teaching staff to clarify
 #  what the expectations are.
-
-
-
-def still_playing():
-
-    E.add_constraint(a & b)
-
 
 def playable_spot(x, y):
     # Add custom constraints by creating formulas with the variables you created. 
