@@ -123,24 +123,39 @@ def draw_board(self):
         print("White: " + str(total_white))
         print("Black: " + str(total_black))
 
+
 # TODO: deal with edge cases
 def is_spot_playable(x, y):
+    # check if empty
+    empty = SPOTS[x][y] == 'e'
+
     # check if row is playable
-    before = SPOTS[x][y-1] == 'b'
-    after = SPOTS[x][y+1] == 'b'
+    playable = false
+    before = SPOTS[x][y - 1] == 'b'
+    after = SPOTS[x][y + 1] == 'b'
     beside_b = before | after
 
     if beside_b:
         if before:
             n = 2
-            sandwich = false
             while n < y:
-                if SPOTS[x][y-n] == 'w':
+                if SPOTS[x][y - n] == 'w':
                     sandwich = true
                     break
-                elif SPOTS[x][y-n] =='':
-                    
-                n = n+1
+                elif SPOTS[x][y - n] == 'e':
+                    break
+                n = n + 1
+        elif after:
+            n = 2
+            while n > 2:
+                if SPOTS[x][y + n] == 'w':
+                    sandwich = true
+                    break
+                elif SPOTS[x][y + n] == 'e':
+                    break
+                n = n + 1
+
+        E.add_constraint(playable >> (sandwich & empty))
 def get_next_play():
     user_move = input("Player ---- enter your next coordinates: ").split(' ')
     x = int(user_move[0])
