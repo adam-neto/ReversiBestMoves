@@ -1,13 +1,13 @@
 from bauhaus import Encoding, proposition, constraint
 from bauhaus.utils import count_solutions, likelihood
 
-# These two lines make sure a faster SAT solver is used.
 from nnf import config
 from nnf import Var
 from nnf import true
 
-import spots
 from spots import SPOTS
+from spots import WHITE_PLAYABLE
+from spots import BLACK_PLAYABLE
 
 config.sat_backend = "kissat"
 
@@ -53,21 +53,22 @@ class Hashable:
 
 @proposition(E)
 class Spot(Hashable):
-    def __init__(self, black, white, empty, r, c, d, playable):
-        self.black = black
-        self.white = white
-        self.empty = empty
-        self.r = r
-        self.c = c
-        self.d = d
-        self.playable = playable
+    def __init__(self, piece, white_playable, black_playable):
+        self.piece = piece
+        self.wp = white_playable
+        self.bp = black_playable
 
     def __str__(self):
         return f"(is spot playable: {self.playable})"
 
+# sets the constraint for each spot on the board
+spot_props = []
+for spot in SPOTS:
+    for wp in WHITE_PLAYABLE:
+        for bp in BLACK_PLAYABLE:
+            spot_props.append(Spot(spot, wp, bp))
 
 # the propositions should be if a white piece is there, if a black piece is there, if it is playable, if r, if c, if d
-# should loop through each spot, so each spot should be part of a 2d array?
 # functions should be: check if spot it playable by row, check if spot is playable by column, check if game is over
 
 # for s in spots : if at least one: p
@@ -82,11 +83,10 @@ class Spot(Hashable):
 # #                at least one: spot[i] = w and for all: for (y+2) < j < i:
 # #                   spot[j] = b
 
-# same for diagonals and columns
-# then, if it is playable, passes to game info and game info finds all the other colour pieces to eliminate
+# same for diagonals and columns, all in GameInfo, but how to convert to constraints?
+# then, if it is playable, passes to game info and game info finds all the other colour pieces to eliminate (POST DRAFT)
 
-# does game state update in run or in gameinfo?
-
+# I'm not sure how to set these props according to the spots.py file
 w = SpotProps("w")  # spot has a white piece
 b = SpotProps("b")  # spot has a black piece
 e = SpotProps("e")  # spot is empty
@@ -152,21 +152,12 @@ def build_theory():
             E.add_constraint(e >> ~b & ~w)
 
 
-def specific_spot(x, y):
-    for spot in SPOTS:
+def check_row_sandwich(x,y):
 
 
 
-
-
-# Build an example full theory for your setting and return it.
-#
-#  There should be at least 10 variables, and a sufficiently large formula to describe it (>50 operators).
-#  This restriction is fairly minimal, and if there is any concern, reach out to the teaching staff to clarify
-#  what the expectations are.
-
-def playable_spot(x, y):
-    # Add custom constraints by creating formulas with the variables you created. 
+"""def playable_spot(x, y):
+    # Add custom constraints by creating formulas with the variables you created.
     E.add_constraint((a | b) & ~x)
     # Implication
     E.add_constraint(y >> z)
@@ -176,7 +167,10 @@ def playable_spot(x, y):
     # for every instance of BasicPropositions, but you want to enforce it for a, b, and c.:
     constraint.add_exactly_one(E, a, b, c)
 
-    return E
+    return E"""
+
+def example_theory():
+    # ???
 
 # TODO: error log to explain why the user can't move there
 

@@ -9,6 +9,7 @@ Author: Adam Neto
 Date Updated: 10/26/23
 """
 from nnf import true
+from nnf import false
 
 # board size info (constant)
 BOARD_WIDTH = 8
@@ -43,7 +44,7 @@ class GameState:
         # check if out of range
         if 0 <= x < BOARD_WIDTH and 0 <= y < BOARD_HEIGHT:
             if self.player == "white":
-                if self.w[x][y] :
+                if self.w[x][y]:
                     return True
             else:
                 if self.b[x][y]:
@@ -74,6 +75,8 @@ class GameState:
         for pos in temp_sandwiched:
             if pos not in self.sandwiched:
                 self.sandwiched.append(pos)
+
+    # TODO: CONVERT ALL THIS TO CONSTRAINTS
 
     def row_sand(self, x, y):
         temp_sandwiched = []  # hold temporary sandwiched coordinates
@@ -200,7 +203,7 @@ class GameState:
             return True
         return False
 
-    def check_full(self):
+    def still_playing(self):
         for j in range(BOARD_WIDTH):
             for i in range(BOARD_HEIGHT):
                 if not (self.w[i][j] or self.b[i][j]):
