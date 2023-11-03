@@ -51,7 +51,6 @@ class GameState:
 
     # current player's opponent has piece at x,y
     def opp_here(self, x, y):
-        out = true
         # check if out of range
         if 0 <= x < BOARD_WIDTH and 0 <= y < BOARD_HEIGHT:
             if self.player == "white":
@@ -73,8 +72,6 @@ class GameState:
         for pos in temp_sandwiched:
             if pos not in self.sandwiched:
                 self.sandwiched.append(pos)
-
-    # TODO: CONVERT ALL THIS TO CONSTRAINTS
 
     def row_sand(self, x, y):
         temp_sandwiched = []  # hold temporary sandwiched coordinates
@@ -164,6 +161,8 @@ class GameState:
 
     # check if there are ANY sandwich possibilities
     def sandwich(self, x, y):
+        self.sandwiched = []  # reset list of sandwiched items so that it is fresh each scan
+
         # only calculate if in range
         if 0 <= x < BOARD_WIDTH and 0 <= y < BOARD_HEIGHT:
             # only calculate if space is empty
@@ -178,8 +177,6 @@ class GameState:
 
     # place a piece and alter the game state
     def place_piece(self, x, y):
-        self.sandwiched = []  # reset list of sandwiched items so that it is fresh each call
-        
         # check if space is playable
         if self.sandwich(x, y):
             # place piece and switch player
@@ -203,6 +200,13 @@ class GameState:
             return True
         return False
 
+    def check_full(self):
+        for j in range(BOARD_WIDTH):
+            for i in range(BOARD_HEIGHT):
+                if not (self.w[i][j] or self.b[i][j]):
+                    return False
+        return True
+
     # draw the current board (only after each turn)
     def draw_board(self):
         total_white = 0;
@@ -224,3 +228,11 @@ class GameState:
             print("Game over. Final Score:")
             print("White: " + str(total_white))
             print("Black: " + str(total_black))
+
+    # print the valid moves and how many pieces they capture
+    def scan_board(self):
+        print("Valid moves: ")
+        for j in range(BOARD_WIDTH):
+            for i in range(BOARD_HEIGHT):
+                if self.sandwich(i, j):
+                    print("(" + str(i) + ", " + str(j) + "): " + str(len(self.sandwiched)) + " captured")
