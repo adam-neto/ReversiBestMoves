@@ -8,8 +8,6 @@ positions hold available moves
 Original author: Adam Neto
 Date Updated: 11/2/23
 """
-from nnf import true
-from nnf import false
 
 # board size info (constant)
 BOARD_WIDTH = 8
@@ -180,6 +178,8 @@ class GameState:
 
     # place a piece and alter the game state
     def place_piece(self, x, y):
+        self.sandwiched = []  # reset list of sandwiched items so that it is fresh each call
+        
         # check if space is playable
         if self.sandwich(x, y):
             # place piece and switch player
