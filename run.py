@@ -125,12 +125,23 @@ def draw_board(self):
 
 
 # TODO: deal with edge cases
+
+# ensure user move is in board range
+def valid_move(x, y):
+    valid_x = 0 <= x <= 7
+    valid_y = 0 <= y <= 7
+    E.add_constraint(valid_x & valid_y)
+
+
 def is_spot_playable(x, y):
     # check if empty
     empty = SPOTS[x][y] == 'e'
 
     # check if row is playable
     playable = false
+    row_sand = false
+    col_sand = false
+    dia_sand = false
     before = SPOTS[x][y - 1] == 'b'
     after = SPOTS[x][y + 1] == 'b'
     beside_b = before | after
@@ -140,7 +151,7 @@ def is_spot_playable(x, y):
             n = 2
             while n < y:
                 if SPOTS[x][y - n] == 'w':
-                    sandwich = true
+                    row_sand = true
                     break
                 elif SPOTS[x][y - n] == 'e':
                     break
@@ -149,13 +160,15 @@ def is_spot_playable(x, y):
             n = 2
             while n > 2:
                 if SPOTS[x][y + n] == 'w':
-                    sandwich = true
+                    row_sand = true
                     break
                 elif SPOTS[x][y + n] == 'e':
                     break
                 n = n + 1
 
-        E.add_constraint(playable >> (sandwich & empty))
+        E.add_constraint(playable >> ((row_sand | col_sand | dia_sand) & empty))
+
+
 def get_next_play():
     user_move = input("Player ---- enter your next coordinates: ").split(' ')
     x = int(user_move[0])
