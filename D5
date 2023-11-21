@@ -1,0 +1,21 @@
+Hello!
+
+Welcome to our project........
+
+It's all a mess right now, but our original plan was to write it out in coding
+logic we understand, and convert it to the constrain logic from class.
+
+The feedback we'd like is all written out in comments on run.py,
+but for overall feedback we're looking for some help with understanding
+what should be set as its own array and what should be converted to variables
+in our run file.
+
+For the most full version of the project, run GameDriver.py. 
+It displays a user-friendly playable version of Reversi, even showing the
+playable moves when given an unplayable coordinate.
+
+The comments we've left are for ourselves mostly, but if something you see
+looks like you would have some ideas, we would LOVE to hear them. So those would be our
+"specific" feedback questions I suppose.
+
+Thanks for reviewing our project!!!

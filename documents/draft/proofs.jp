@@ -1,0 +1,8 @@
+CONJECTUREPANEL Proofs
+    THEOREM IS ∀y.((P(1,y)∨B(1,y))∧(P(2,y)∨B(2,y))∧(P(3,y)∨B(3,y))∧(P(4,y)∨B(4,y))∧(P(5,y)∨B(5,y))∧(P(6,y)∨B(6,y))∧(P(7,y)∨B(7,y))∧(P(8,y)∨B(8,y)))⊢F
+    THEOREM IS ∀x.∀y.(¬B(x,y)∧¬P(x,y))⊢∀x.∀y.E(x,y)
+    THEOREM IS ∀y.(B(2,y)∧P(5,y)∧(¬(E(3,y)∨E(4,y)∨P(3,y)∨P(4,y))))⊢∀y.R(1,y)
+    THEOREM IS ∀x.(B(x,2)∧P(x,5)∧(¬(E(x,3)∨E(x,4)∨P(x,3)∨P(x,4))))⊢∀x.C(x,1)
+    THEOREM IS B(2,2)∧P(5,5)∧(¬(E(3,3)∨E(4,4)∨P(3,3)∨P(4,4)))⊢D(1,1)
+    THEOREM IS ∀x.∀y.(E(x,y)∧(R(x,y)∨C(x,y)∨D(x,y)))⊢∀x.∀y.S(x,y)
+END
