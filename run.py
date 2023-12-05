@@ -1,4 +1,4 @@
-from bauhaus import Encoding, proposition, constraint
+from bauhaus import Encoding, proposition, constraint, Or, And
 from bauhaus.utils import count_solutions, likelihood
 
 from nnf import config
@@ -17,7 +17,7 @@ BOARD_WIDTH = 8
 BOARD_HEIGHT = 8
 
 # Encoding that will store all of your constraints
-# E = Encoding()
+E = Encoding()
 
 
 # FOR THE FEEDBACK: so what we're confused about is what we should have our spots as (objects? or just a grid?) because
@@ -100,13 +100,37 @@ BOARD_HEIGHT = 8
 # draws the board after each turn
 # TODO: update the board colours when a player successfully places a piece
 
+# create hashable object
+class Hashable:
+    def __hash__(self):
+        return hash(str(self))
+
+    def __eq__(self, __value: object) -> bool:
+        return hash(self) == hash(__value)
+
+    def __repr__(self):
+        return str(self)
+
+
+# class for piece proposition
+@proposition(E)
+class Piece(Hashable):
+    def __init__(self, colour, x, y):
+        self.colour = colour
+        self.x = x
+        self.y = y
+
+    def __str__(self):
+        return f"{self.colour}{self.x}{self.y}"
+
+
 # grid format for each piece colour
-def piece_array(name):
+def piece_array(colour):
     board = []
     for j in range(BOARD_HEIGHT):
         row = []
         for i in range(BOARD_WIDTH):
-            row.append(Var('f{name}{i}{j}'))
+            row.append(Piece(colour, i, j))
         board.append(row)
     return board
 
@@ -117,8 +141,9 @@ b = piece_array('b')
 
 
 def set_board(board):
-    # create proposition to add conjunctions to
-    board_prop = true
+    # start proposition as true to add conjuncts to
+    # there will always be either not a white piece or not a black piece on a position
+    board_prop = ~Piece(f'w', f'0', f'0') | ~Piece(f'b', f'0', f'0')
 
     # set propositions of piece position for every position on the grid
     for j in range(BOARD_HEIGHT):
@@ -126,117 +151,120 @@ def set_board(board):
             # set boolean logic of current position on board
             if board[j][i] == 'w':
                 # for spaces where we have a white piece, add that to the board proposition
-                board_prop &= w[j][i]
+                board_prop &= Piece(f'w', f'{i}', f'{j}')
                 # in spaces we have a white piece, add the negation
                 # so that bij being false will make the prop true
-                board_prop &= ~b[j][i]
+                board_prop &= ~Piece(f'b', f'{i}', f'{j}')
             elif board[j][i] == 'b':
-                board_prop &= ~w[j][i]
-                board_prop &= b[j][i]
+                board_prop &= ~Piece(f'w', f'{i}', f'{j}')
+                board_prop &= Piece(f'b', f'{i}', f'{j}')
             else:
-                board_prop &= ~w[j][i]
-                board_prop &= ~b[j][i]
+                board_prop &= ~Piece(f'w', f'{i}', f'{j}')
+                board_prop &= ~Piece(f'b', f'{i}', f'{j}')
     return board_prop
 
 
 def row_sandwich(x, y):
     # start row prop as false because it uses disjunctions, not conjunctions
-    row_prop = false
+    # there will never be both pieces on the same position
+    row_prop = Piece(f'w', f'{x}', f'{y}') & Piece(f'b', f'{x}', f'{y}')
 
     # count to the left
-    temp_row_prop = ~w[y][x] & ~b[y][x]  # space must ALWAYS be empty for THIS disjunction to be true
+    temp_row_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}', f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
     counter_x = 1
     while (x - counter_x) >= 1:  # stop scanning when at the space one away from the edge
         # add that the next to the left is black
-        temp_row_prop &= b[y][x - counter_x]
+        temp_row_prop &= Piece(f'b', f'{x - counter_x}', f'{y}')
         # add current sequence of black pieces as a disjunction, such that the end MUST be white
         counter_x += 1
-        row_prop |= temp_row_prop & w[y][x - counter_x]
+        row_prop |= temp_row_prop & Piece(f'w', f'{x - counter_x}', f'{y}')
 
     # count to the right
-    temp_row_prop = ~w[y][x] & ~b[y][x]  # space must ALWAYS be empty for THIS disjunction to be true
+    temp_row_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}', f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
     counter_x = 1
     # stop scanning when at the space one away from the edge (BOARD_WIDTH-1 IS MAX INDEX)
     while (x + counter_x) <= (BOARD_WIDTH - 2):
         # add that the next to the right is black
-        temp_row_prop &= b[y][x + counter_x]
+        temp_row_prop &= Piece(f'b', f'{x + counter_x}', f'{y}')
         # add current sequence of black pieces as a disjunction, such that the end MUST be white
         counter_x += 1
-        row_prop |= temp_row_prop & w[y][x + counter_x]
+        row_prop |= temp_row_prop & Piece(f'w', f'{x + counter_x}', f'{y}')
 
     return row_prop
 
 
 def column_sandwich(x, y):
     # start col prop as false because it uses disjunctions, not conjunctions
-    col_prop = false
+    # there will never be both pieces on the same position
+    col_prop = Piece(f'w', f'{x}', f'{y}') & Piece(f'b', f'{x}', f'{y}')
 
     # count upwards
-    temp_col_prop = ~w[y][x] & ~b[y][x]  # space must ALWAYS be empty for THIS disjunction to be true
+    temp_col_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}', f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
     counter_y = 1
     while (y - counter_y) >= 1:  # stop scanning when at the space one away from the edge
         # add that the next above is black
-        temp_col_prop &= b[y - counter_y][x]
+        temp_col_prop &= Piece(f'b', f'{x}', f'{y - counter_y}')
         # add current sequence of black pieces as a disjunction, such that the end MUST be white
         counter_y += 1
-        col_prop |= temp_col_prop & w[y - counter_y][x]
+        col_prop |= temp_col_prop & Piece(f'w', f'{x}', f'{y - counter_y}')
 
     # count downwards
-    temp_col_prop = ~w[y][x] & ~b[y][x]  # space must ALWAYS be empty for THIS disjunction to be true
+    temp_col_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}', f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
     counter_y = 1
     while (y + counter_y) <= (BOARD_HEIGHT - 2):  # stop scanning when at the space one away from the edge
         # add that the next below is black
-        temp_col_prop &= b[y + counter_y][x]
+        temp_col_prop &= Piece(f'b', f'{x}', f'{y + counter_y}')
         # add current sequence of black pieces as a disjunction, such that the end MUST be white
         counter_y += 1
-        col_prop |= temp_col_prop & w[y + counter_y][x]
+        col_prop |= temp_col_prop & Piece(f'w', f'{x}', f'{y + counter_y}')
 
     return col_prop
 
 
 def diagonal_sandwich(x, y):
     # start diag prop as false because it uses disjunctions, not conjunctions
-    diag_prop = false
+    # there will never be both pieces on the same position
+    diag_prop = Piece(f'w', f'{x}', f'{y}') & Piece(f'b', f'{x}', f'{y}')
 
     # count up and left
-    temp_diag_prop = ~w[y][x] & ~b[y][x]  # space must ALWAYS be empty for THIS disjunction to be true
+    temp_diag_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}', f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
     counter_xy = 1
     while (x - counter_xy) >= 1 and (y - counter_xy) >= 1:  # stop scanning when at the space one away from the edge
         # add that the next above and left is black
-        temp_diag_prop &= b[y - counter_xy][x - counter_xy]
+        temp_diag_prop &= Piece(f'b', f'{x - counter_xy}', f'{y - counter_xy}')
         # add current sequence of black pieces as a disjunction, such that the end MUST be white
         counter_xy += 1
-        diag_prop |= temp_diag_prop & w[y - counter_xy][x - counter_xy]
+        diag_prop |= temp_diag_prop & Piece(f'w', f'{x - counter_xy}', f'{y - counter_xy}')
 
     # count up and right
-    temp_diag_prop = ~w[y][x] & ~b[y][x]  # space must ALWAYS be empty for THIS disjunction to be true
+    temp_diag_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}', f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
     counter_xy = 1
     while (x + counter_xy) <= (BOARD_WIDTH - 2) and (y - counter_xy) >= 1:
         # add that the next above and left is black
-        temp_diag_prop &= b[y - counter_xy][x + counter_xy]
+        temp_diag_prop &= Piece(f'b', f'{x + counter_xy}', f'{y - counter_xy}')
         # add current sequence of black pieces as a disjunction, such that the end MUST be white
         counter_xy += 1
-        diag_prop |= temp_diag_prop & w[y - counter_xy][x + counter_xy]
+        diag_prop |= temp_diag_prop & Piece(f'w', f'{x + counter_xy}', f'{y - counter_xy}')
 
     # count down and left
-    temp_diag_prop = ~w[y][x] & ~b[y][x]  # space must ALWAYS be empty for THIS disjunction to be true
+    temp_diag_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}', f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
     counter_xy = 1
     while (x - counter_xy) >= 1 and (y + counter_xy) <= (BOARD_HEIGHT - 2):
         # add that the next above and left is black
-        temp_diag_prop &= b[y + counter_xy][x - counter_xy]
+        temp_diag_prop &= Piece(f'b', f'{x - counter_xy}', f'{y + counter_xy}')
         # add current sequence of black pieces as a disjunction, such that the end MUST be white
         counter_xy += 1
-        diag_prop |= temp_diag_prop & w[y + counter_xy][x - counter_xy]
+        diag_prop |= temp_diag_prop & Piece(f'w', f'{x - counter_xy}', f'{y + counter_xy}')
 
     # count down and right
-    temp_diag_prop = ~w[y][x] & ~b[y][x]  # space must ALWAYS be empty for THIS disjunction to be true
+    temp_diag_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}', f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
     counter_xy = 1
     while (x + counter_xy) <= (BOARD_WIDTH - 2) and (y + counter_xy) <= (BOARD_HEIGHT - 2):
         # add that the next above and left is black
-        temp_diag_prop &= b[y + counter_xy][x + counter_xy]
+        temp_diag_prop &= Piece(f'b', f'{x + counter_xy}', f'{y + counter_xy}')
         # add current sequence of black pieces as a disjunction, such that the end MUST be white
         counter_xy += 1
-        diag_prop |= temp_diag_prop & w[y + counter_xy][x + counter_xy]
+        diag_prop |= temp_diag_prop & Piece(f'w', f'{x + counter_xy}', f'{y + counter_xy}')
 
     return diag_prop
 
@@ -330,9 +358,7 @@ def diagonal_sandwich(x, y):
 #         if self.mine_here(x + i, y + j):
 #             return true
 
-def final_theory():
-    game_theory = Encoding()
-
+def build_theory():
     # SHOULD SCAN FOR ANY POSSIBLE SANDWICH
     for j in range(BOARD_HEIGHT):
         for i in range(BOARD_WIDTH):
@@ -340,8 +366,9 @@ def final_theory():
             col_sand = column_sandwich(i, j)
             diag_sand = diagonal_sandwich(i, j)
             # sandwich constraints include whether the position is empty
-            game_theory.add_constraint(row_sand | col_sand | diag_sand)
-    return game_theory
+            print(f'{i}{j}{row_sand | col_sand | diag_sand}')
+            E.add_constraint(row_sand | col_sand | diag_sand)
+    return E
 
 
 def draw_board(self):
@@ -355,6 +382,7 @@ def draw_board(self):
             else:
                 row += "." + " "
         print(row)
+
 
 # TODO: deal with edge cases
 
@@ -484,10 +512,12 @@ if __name__ == "__main__":
     # Don't compile until you're finished adding all your constraints!
     # MAKE PROPS 1 RETURN THE PROPOSITIONS FOR THE FIRST TEST CASE
     board1 = test1()
-    T = final_theory()
-    T.add_constraint(board1)
+    print(board1)
+    T = build_theory()
+    #T.add_constraint(board1)
+    T = T.compile()
 
-    # After compilation (and only after), you can check some of the properties
+    # After compilation (and only after), you can check some properties
     # of your model:
 
     print("\nSatisfiable: %s" % T.satisfiable())
