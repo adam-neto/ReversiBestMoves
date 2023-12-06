@@ -124,6 +124,11 @@ class Piece(Hashable):
         return f"{self.colour}{self.x}{self.y}"
 
 
+# if and only if nnf formula
+def iff(left, right):
+    return (~left | right) & (left | ~right)
+
+
 # grid format for each piece colour
 def piece_array(colour):
     board = []
@@ -138,6 +143,7 @@ def piece_array(colour):
 # create a grid of variables for each piece colour (w00, w01 etc.) that hold a boolean value
 w = piece_array('w')
 b = piece_array('b')
+next_piece = piece_array('next')
 
 
 def set_board(board):
@@ -170,7 +176,8 @@ def row_sandwich(x, y):
     row_prop = Piece(f'w', f'{x}', f'{y}') & Piece(f'b', f'{x}', f'{y}')
 
     # count to the left
-    temp_row_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}', f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
+    temp_row_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}',
+                                                          f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
     counter_x = 1
     while (x - counter_x) >= 1:  # stop scanning when at the space one away from the edge
         # add that the next to the left is black
@@ -180,7 +187,8 @@ def row_sandwich(x, y):
         row_prop |= temp_row_prop & Piece(f'w', f'{x - counter_x}', f'{y}')
 
     # count to the right
-    temp_row_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}', f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
+    temp_row_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}',
+                                                          f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
     counter_x = 1
     # stop scanning when at the space one away from the edge (BOARD_WIDTH-1 IS MAX INDEX)
     while (x + counter_x) <= (BOARD_WIDTH - 2):
@@ -199,7 +207,8 @@ def column_sandwich(x, y):
     col_prop = Piece(f'w', f'{x}', f'{y}') & Piece(f'b', f'{x}', f'{y}')
 
     # count upwards
-    temp_col_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}', f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
+    temp_col_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}',
+                                                          f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
     counter_y = 1
     while (y - counter_y) >= 1:  # stop scanning when at the space one away from the edge
         # add that the next above is black
@@ -209,7 +218,8 @@ def column_sandwich(x, y):
         col_prop |= temp_col_prop & Piece(f'w', f'{x}', f'{y - counter_y}')
 
     # count downwards
-    temp_col_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}', f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
+    temp_col_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}',
+                                                          f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
     counter_y = 1
     while (y + counter_y) <= (BOARD_HEIGHT - 2):  # stop scanning when at the space one away from the edge
         # add that the next below is black
@@ -227,7 +237,8 @@ def diagonal_sandwich(x, y):
     diag_prop = Piece(f'w', f'{x}', f'{y}') & Piece(f'b', f'{x}', f'{y}')
 
     # count up and left
-    temp_diag_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}', f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
+    temp_diag_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}',
+                                                           f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
     counter_xy = 1
     while (x - counter_xy) >= 1 and (y - counter_xy) >= 1:  # stop scanning when at the space one away from the edge
         # add that the next above and left is black
@@ -237,7 +248,8 @@ def diagonal_sandwich(x, y):
         diag_prop |= temp_diag_prop & Piece(f'w', f'{x - counter_xy}', f'{y - counter_xy}')
 
     # count up and right
-    temp_diag_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}', f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
+    temp_diag_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}',
+                                                           f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
     counter_xy = 1
     while (x + counter_xy) <= (BOARD_WIDTH - 2) and (y - counter_xy) >= 1:
         # add that the next above and left is black
@@ -247,7 +259,8 @@ def diagonal_sandwich(x, y):
         diag_prop |= temp_diag_prop & Piece(f'w', f'{x + counter_xy}', f'{y - counter_xy}')
 
     # count down and left
-    temp_diag_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}', f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
+    temp_diag_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}',
+                                                           f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
     counter_xy = 1
     while (x - counter_xy) >= 1 and (y + counter_xy) <= (BOARD_HEIGHT - 2):
         # add that the next above and left is black
@@ -257,7 +270,8 @@ def diagonal_sandwich(x, y):
         diag_prop |= temp_diag_prop & Piece(f'w', f'{x - counter_xy}', f'{y + counter_xy}')
 
     # count down and right
-    temp_diag_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}', f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
+    temp_diag_prop = ~Piece(f'w', f'{x}', f'{y}') & ~Piece(f'b', f'{x}',
+                                                           f'{y}')  # space must ALWAYS be empty for THIS disjunction to be true
     counter_xy = 1
     while (x + counter_xy) <= (BOARD_WIDTH - 2) and (y + counter_xy) <= (BOARD_HEIGHT - 2):
         # add that the next above and left is black
@@ -360,24 +374,67 @@ def diagonal_sandwich(x, y):
 
 def build_theory():
     # SHOULD SCAN FOR ANY POSSIBLE SANDWICH
+    # start prop as false because it uses disjunctions, not conjunctions
+    # there will never be both pieces on the same position
+    constraints = Piece(f'w', f'0', f'0') & Piece(f'b', f'0', f'0')
     for j in range(BOARD_HEIGHT):
         for i in range(BOARD_WIDTH):
             row_sand = row_sandwich(i, j)
             col_sand = column_sandwich(i, j)
             diag_sand = diagonal_sandwich(i, j)
+
             # sandwich constraints include whether the position is empty
-            print(f'{i}{j}{row_sand | col_sand | diag_sand}')
-            E.add_constraint(row_sand | col_sand | diag_sand)
+            spot_constraint = row_sand | col_sand | diag_sand
+            constraints |= spot_constraint
+
+            # keep track of valid next moves
+            E.add_constraint(iff(Piece(f'next', f'{i}', f'{j}'), spot_constraint))
+    E.add_constraint(constraints)
     return E
 
 
-def draw_board(self):
+def test_theory(board):
+    # start proposition as true to add conjuncts to
+    # there will always be either not a white piece or not a black piece on a position
+
+    # set propositions of piece position for every position on the grid
     for j in range(BOARD_HEIGHT):
-        row = ""
         for i in range(BOARD_WIDTH):
-            if self.w[j][i]:
+            # set boolean logic of current position on board
+            if board[j][i] == 'w':
+                # for spaces where we have a white piece, add that to the board proposition
+                E.add_constraint(Piece(f'w', f'{i}', f'{j}') & ~Piece(f'b', f'{i}', f'{j}'))
+            elif board[j][i] == 'b':
+                E.add_constraint(~Piece(f'w', f'{i}', f'{j}') & Piece(f'b', f'{i}', f'{j}'))
+            else:
+                E.add_constraint(~Piece(f'w', f'{i}', f'{j}') & ~Piece(f'b', f'{i}', f'{j}'))
+
+
+def draw_solution(sol):
+    if sol is None:
+        print("No available moves.")
+    else:
+        for j in range(BOARD_HEIGHT):
+            row = "\n"
+            for i in range(BOARD_WIDTH):
+                if sol[f'w{i}{j}']:
+                    row += "w" + " "
+                elif sol[f'b{i}{j}']:
+                    row += "b" + " "
+                elif sol[f'next{i}{j}']:
+                    row += "x" + " "
+                else:
+                    row += "." + " "
+            print(row)
+
+
+def draw_board(board):
+    for j in range(BOARD_HEIGHT):
+        row = "\n"
+        for i in range(BOARD_WIDTH):
+            if board[j][i] == 'w':
                 row += "w" + " "
-            elif self.b[j][i]:
+            elif board[j][i] == 'b':
                 row += "b" + " "
             else:
                 row += "." + " "
@@ -503,26 +560,67 @@ def test1():
         ['.', '.', '.', '.', '.', '.', '.', '.'],
     ]
 
-    return set_board(board)
+    return board
 
 
-# TODO: error log to explain why the user can't move there
+def test2():
+    board = [
+        ['.', '.', '.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', 'w', 'b', '.', '.', '.'],
+        ['.', '.', 'w', 'w', 'w', '.', '.', '.'],
+        ['.', '.', 'b', 'w', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.', '.', '.'],
+    ]
+
+    return board
+
+
+def test3():
+    board = [
+        ['.', '.', '.', 'b', '.', '.', '.', 'b'],
+        ['.', '.', '.', '.', 'b', '.', 'b', 'b'],
+        ['b', '.', 'w', 'w', 'w', 'b', 'w', 'w'],
+        ['b', 'b', 'b', 'w', 'w', 'w', 'b', 'w'],
+        ['b', 'b', 'w', 'w', 'w', 'w', 'b', 'w'],
+        ['b', 'w', 'w', 'w', 'w', '.', 'b', 'w'],
+        ['b', 'b', 'b', '.', '.', '.', '.', 'w'],
+        ['b', 'b', 'b', 'b', '.', '.', '.', '.'],
+    ]
+
+    return board
+
 
 if __name__ == "__main__":
     # Don't compile until you're finished adding all your constraints!
     # MAKE PROPS 1 RETURN THE PROPOSITIONS FOR THE FIRST TEST CASE
-    board1 = test1()
-    print(board1)
+    # board = test1()
+    # board = test2()
+    board = test3()
+
+    test_theory(board)
     T = build_theory()
-    #T.add_constraint(board1)
     T = T.compile()
+    sol = T.solve()
+
+    print("\nGiven game board: ")
+    draw_board(board)
+    print()
+    print("\nPotential next moves: ")
+    draw_solution(sol)
+
+    # print(T)
+    # T.introspect()
 
     # After compilation (and only after), you can check some properties
     # of your model:
 
-    print("\nSatisfiable: %s" % T.satisfiable())
-    print("# Solutions: %d" % count_solutions(T))
-    print("   Solution: %s" % T.solve())
+    #print("\nSatisfiable: %s" % T.satisfiable())
+    #print("GOT THIS FAR")
+    #print("# Solutions: %d" % count_solutions(T))
+    #print("   Solution: %s" % T.solve())
 
     # print("\nVariable likelihoods:")
     # for v, vn in zip([w, b, e, r, d, c, p], 'wberdcp'):
