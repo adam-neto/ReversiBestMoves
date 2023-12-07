@@ -2,17 +2,18 @@
 
 Welcome to the major project for CISC/CMPE 204!
 
-This modelling project takes in a game state (positions of pieces) for the board game Reversi (aka Othello). It uses this information to model which moves are available for the next players, which moves will make the player have more pieces than their opponent, and which moves yield the most possible pieces.
+This modelling project takes in a game state (positions of pieces) for the board game Reversi (aka Othello). It uses this information to model which moves are available for the next players. Our original goal was to include which moves will make the player have more pieces than their opponent, and which moves yield the most possible pieces, however these problems became unfit for a static logical theory like the one that this project set up.
 
 Change this README.md file to summarize your project, and provide pointers to the general structure of the repository. How you organize and build things (which files, how you structure things, etc) is entirely up to you! The only things you must keep in place are what is already listed in the **Structure** section below.
 
 ## Structure
 
 * `documents`: Contains folders for both of your draft and final submissions. README.md files are included in both.
-* `run.py`: General wrapper script that you can choose to use or not. Only requirement is that you implement the one function inside of there for the auto-checks.
+* `run.py`: This file includes the logical theory that we built based on the board game. The methods test1, test2, etc. contain sample boards that the user can pass into the build_theory function to yield all available moves.
+* General wrapper script that you can choose to use or not. Only requirement is that you implement the one function inside of there for the auto-checks.
 * `test.py`: Run this file to confirm that your submission has everything required. This essentially just means it will check for the right files and sufficient theory size.
 * `GameInfo.py`: This file contains the original methods and information necessary to run a game state (through conventional coding, not encoding with logic).
-* `GameDriver.py`: Run this file for a user friendly implementation of the GameInfo.py file, and its associated Reversi game.
+* `GameDriver.py`: Run this file for a user friendly implementation of the GameInfo.py file, and its associated Reversi game (conventional coding, not encoding).
 
 ## Running With Docker
 
