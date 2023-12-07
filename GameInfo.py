@@ -24,8 +24,8 @@ class GameState:
         self.sandwiched = []
 
         # initialize game board (booleans for each black and white)
-        self.w = [[False for j in range(BOARD_WIDTH)] for i in range(BOARD_HEIGHT)]
-        self.b = [[False for j in range(BOARD_WIDTH)] for i in range(BOARD_HEIGHT)]
+        self.w = [[False for i in range(BOARD_WIDTH)] for j in range(BOARD_HEIGHT)]
+        self.b = [[False for i in range(BOARD_WIDTH)] for j in range(BOARD_HEIGHT)]
 
         # initial white positions
         self.w[int(BOARD_HEIGHT / 2 - 1)][int(BOARD_WIDTH / 2 - 1)] = True  # middle top-left starter
@@ -94,68 +94,60 @@ class GameState:
 
     def column_sand(self, x, y):
         temp_sandwiched = []  # hold temporary sandwiched coordinates
-        j = 1  # scan y values (increment)
+        i = 1  # scan y values (increment)
 
         # above
-        while self.opp_here(x, y - j):
-            temp_sandwiched.append([x, y - j])
-            j += 1
-            if self.mine_here(x, y - j):
+        while self.opp_here(x, y - i):
+            temp_sandwiched.append([x, y - i])
+            i += 1
+            if self.mine_here(x, y - i):
                 self.append_sandwiched(temp_sandwiched)
         temp_sandwiched = []  # reset temp sandwiched values
-        j = 1  # reset j after failed test
+        i = 1  # reset i after failed test
 
         # below
-        while self.opp_here(x, y + j):
-            temp_sandwiched.append([x, y + j])
-            j += 1
-            if self.mine_here(x, y + j):
+        while self.opp_here(x, y + i):
+            temp_sandwiched.append([x, y + i])
+            i += 1
+            if self.mine_here(x, y + i):
                 self.append_sandwiched(temp_sandwiched)
 
     def diagonal_sand(self, x, y):
         temp_sandwiched = []  # hold temporary sandwiched coordinates
-        i = 1  # scan x values (increment)
-        j = 1  # scan y values (increment)
+        i = 1  # scan x and y values (increment)
 
         # up-left
-        while self.opp_here(x - i, y - j):
-            temp_sandwiched.append([x - i, y - j])
+        while self.opp_here(x - i, y - i):
+            temp_sandwiched.append([x - i, y - i])
             i += 1
-            j += 1
-            if self.mine_here(x - i, y - j):
+            if self.mine_here(x - i, y - i):
                 self.append_sandwiched(temp_sandwiched)
         temp_sandwiched = []  # reset temp sandwiched values
         i = 1  # reset i after failed test
-        j = 1  # reset j after failed test
 
         # up-right
-        while self.opp_here(x + i, y - j):
-            temp_sandwiched.append([x + i, y - j])
+        while self.opp_here(x + i, y - i):
+            temp_sandwiched.append([x + i, y - i])
             i += 1
-            j += 1
-            if self.mine_here(x + i, y - j):
+            if self.mine_here(x + i, y - i):
                 self.append_sandwiched(temp_sandwiched)
         temp_sandwiched = []  # reset temp sandwiched values
         i = 1  # reset i after failed test
-        j = 1  # reset j after failed test
 
         # down-left
-        while self.opp_here(x - i, y + j):
-            temp_sandwiched.append([x - i, y + j])
+        while self.opp_here(x - i, y + i):
+            temp_sandwiched.append([x - i, y + i])
             i += 1
-            j += 1
-            if self.mine_here(x - i, y + j):
+            if self.mine_here(x - i, y + i):
                 self.append_sandwiched(temp_sandwiched)
         temp_sandwiched = []  # reset temp sandwiched values
         i = 1  # reset i after failed test
-        j = 1  # reset j after failed test
 
         # down-right
-        while self.opp_here(x + i, y + j):
-            temp_sandwiched.append([x + i, y + j])
+        while self.opp_here(x + i, y + i):
+            temp_sandwiched.append([x + i, y + i])
             i += 1
-            j += 1
-            if self.mine_here(x + i, y + j):
+            if self.mine_here(x + i, y + i):
                 self.append_sandwiched(temp_sandwiched)
 
     # check if there are ANY sandwich possibilities
