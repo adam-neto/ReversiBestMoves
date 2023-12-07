@@ -1,12 +1,11 @@
 """
-This file creates a Reversi game state
-to be passed in for modelling
+This file creates a playable Reversi game state
 It also contains methods for updating
 the game state, and checking if
 positions hold available moves
 
 Author: Adam Neto
-Date Updated: 10/26/23
+Date Updated: 12/7/23
 """
 
 # board size info (constant)
@@ -29,12 +28,12 @@ class GameState:
         self.b = [[False for j in range(BOARD_WIDTH)] for i in range(BOARD_HEIGHT)]
 
         # initial white positions
-        self.w[int(BOARD_WIDTH / 2 - 1)][int(BOARD_HEIGHT / 2 - 1)] = True  # middle top-left starter
-        self.w[int(BOARD_WIDTH / 2)][int(BOARD_HEIGHT / 2)] = True  # middle bottom-right starter
+        self.w[int(BOARD_HEIGHT / 2 - 1)][int(BOARD_WIDTH / 2 - 1)] = True  # middle top-left starter
+        self.w[int(BOARD_HEIGHT / 2)][int(BOARD_WIDTH / 2)] = True  # middle bottom-right starter
 
         # initial black positions
-        self.b[int(BOARD_WIDTH / 2)][int(BOARD_HEIGHT / 2 - 1)] = True  # middle top-right starter
-        self.b[int(BOARD_WIDTH / 2 - 1)][int(BOARD_HEIGHT / 2)] = True  # middle bottom-left starter
+        self.b[int(BOARD_HEIGHT / 2)][int(BOARD_WIDTH / 2 - 1)] = True  # middle top-right starter
+        self.b[int(BOARD_HEIGHT / 2 - 1)][int(BOARD_WIDTH / 2)] = True  # middle bottom-left starter
 
     # SPACE AVAILABILITY
     # current player has piece at x,y
@@ -42,10 +41,10 @@ class GameState:
         # check if out of range
         if 0 <= x < BOARD_WIDTH and 0 <= y < BOARD_HEIGHT:
             if self.player == "white":
-                if self.w[x][y]:
+                if self.w[y][x]:
                     return True
             else:
-                if self.b[x][y]:
+                if self.b[y][x]:
                     return True
         return False
 
@@ -54,10 +53,10 @@ class GameState:
         # check if out of range
         if 0 <= x < BOARD_WIDTH and 0 <= y < BOARD_HEIGHT:
             if self.player == "white":
-                if self.b[x][y]:
+                if self.b[y][x]:
                     return True
             else:
-                if self.w[x][y]:
+                if self.w[y][x]:
                     return True
         return False
 
@@ -179,43 +178,43 @@ class GameState:
         if self.sandwich(x, y):
             # place piece and switch player
             if self.player == "white":
-                self.w[x][y] = True
+                self.w[y][x] = True
 
                 # swap sandwiched pieces
                 for pos in self.sandwiched:
-                    self.w[pos[0]][pos[1]] = True
-                    self.b[pos[0]][pos[1]] = False
+                    self.w[pos[1]][pos[0]] = True
+                    self.b[pos[1]][pos[0]] = False
                 self.player = "black"
             else:
-                self.b[x][y] = True
+                self.b[y][x] = True
 
                 # swap sandwiched pieces
                 for pos in self.sandwiched:
-                    self.b[pos[0]][pos[1]] = True
-                    self.w[pos[0]][pos[1]] = False
+                    self.b[pos[1]][pos[0]] = True
+                    self.w[pos[1]][pos[0]] = False
                 self.player = "white"
             self.sandwiched = []
             return True
         return False
 
     def check_full(self):
-        for j in range(BOARD_WIDTH):
-            for i in range(BOARD_HEIGHT):
-                if not (self.w[i][j] or self.b[i][j]):
+        for j in range(BOARD_HEIGHT):
+            for i in range(BOARD_WIDTH):
+                if not (self.w[j][i] or self.b[j][i]):
                     return False
         return True
 
     # draw the current board (only after each turn)
     def draw_board(self):
-        total_white = 0;
-        total_black = 0;
-        for j in range(BOARD_WIDTH):
+        total_white = 0
+        total_black = 0
+        for j in range(BOARD_HEIGHT):
             row = ""
-            for i in range(BOARD_HEIGHT):
-                if self.w[i][j]:
+            for i in range(BOARD_WIDTH):
+                if self.w[j][i]:
                     row += "w" + " "
                     total_white += 1
-                elif self.b[i][j]:
+                elif self.b[j][i]:
                     row += "b" + " "
                     total_black += 1
                 else:
